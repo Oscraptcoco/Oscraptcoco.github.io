@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/doge32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/doge16.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-material.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"oscraptcoco.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="原理以及步骤：   使用AdjustTokenPrivileges函数对当前进程进行提权 使用Process32First函数取得目标进程ID 使用OpenProcess函数打开目标进程 使用VirtualAllocEx函数为目标进程分配空间 使用WriteProcessMemory函数写入Dll路径 使用GetProcAddress函数取得LoadLibrary函数地址 使用CreateRem">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程Dll注入">
+<meta property="og:url" content="https://oscraptcoco.github.io/2022/06/23/%E4%B8%80%E3%80%81%E8%BF%9C%E7%A8%8BDll%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:site_name" content="Welcome">
+<meta property="og:description" content="原理以及步骤：   使用AdjustTokenPrivileges函数对当前进程进行提权 使用Process32First函数取得目标进程ID 使用OpenProcess函数打开目标进程 使用VirtualAllocEx函数为目标进程分配空间 使用WriteProcessMemory函数写入Dll路径 使用GetProcAddress函数取得LoadLibrary函数地址 使用CreateRem">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s3.bmp.ovh/imgs/2022/06/23/9f02f1d55207c1d1.png">
+<meta property="article:published_time" content="2022-06-23T03:55:18.000Z">
+<meta property="article:modified_time" content="2022-06-23T03:56:26.572Z">
+<meta property="article:author" content="Oscraptcoco">
+<meta property="article:tag" content="注入">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s3.bmp.ovh/imgs/2022/06/23/9f02f1d55207c1d1.png">
+
+<link rel="canonical" href="https://oscraptcoco.github.io/2022/06/23/%E4%B8%80%E3%80%81%E8%BF%9C%E7%A8%8BDll%E6%B3%A8%E5%85%A5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>远程Dll注入 | Welcome</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Welcome</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://oscraptcoco.github.io/2022/06/23/%E4%B8%80%E3%80%81%E8%BF%9C%E7%A8%8BDll%E6%B3%A8%E5%85%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://lh3.googleusercontent.com/Vbd2SNR9nNWhdYhdg2z2Mjwn-fgxVK6nzVWlnHor7dYYI56Ls6wtdWKMEHLUdMFAPIGu8w=s85">
+      <meta itemprop="name" content="Oscraptcoco">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Welcome">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          远程Dll注入
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-06-23 11:55:18 / 修改时间：11:56:26" itemprop="dateCreated datePublished" datetime="2022-06-23T11:55:18+08:00">2022-06-23</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li>原理以及步骤：</li>
+</ul>
+<ol>
+<li>使用AdjustTokenPrivileges函数对当前进程进行提权</li>
+<li>使用Process32First函数取得目标进程ID</li>
+<li>使用OpenProcess函数打开目标进程</li>
+<li>使用VirtualAllocEx函数为目标进程分配空间</li>
+<li>使用WriteProcessMemory函数写入Dll路径</li>
+<li>使用GetProcAddress函数取得LoadLibrary函数地址</li>
+<li>使用CreateRemoteThread函数创建远程线程执行LoadLibrary</li>
+</ol>
+<ul>
+<li>具体实现过程：</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">AdjustPrivilege</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	HANDLE TheToken = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">if</span> (::OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &amp;TheToken))</span><br><span class="line">	&#123;</span><br><span class="line">		TOKEN_PRIVILEGES tkp;</span><br><span class="line">		LookupPrivilegeValue(<span class="literal">NULL</span>, SE_DEBUG_NAME, &amp;tkp.Privileges[<span class="number">0</span>].Luid);</span><br><span class="line">		tkp.PrivilegeCount = <span class="number">1</span>;</span><br><span class="line">		tkp.Privileges[<span class="number">0</span>].Attributes = SE_PRIVILEGE_ENABLED;</span><br><span class="line">		AdjustTokenPrivileges(TheToken, FALSE, &amp;tkp, <span class="keyword">sizeof</span>(tkp), <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">DWORD <span class="title function_">GetProcessID</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> ErrorCode;</span><br><span class="line">	<span class="type">char</span> szExeName[<span class="number">20</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	PROCESSENTRY32 pe;</span><br><span class="line">	ZeroMemory(&amp;pe, <span class="keyword">sizeof</span>(pe));</span><br><span class="line">	pe.dwSize = <span class="keyword">sizeof</span>(pe);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;输入程序名称：&quot;</span>);</span><br><span class="line">	<span class="built_in">scanf</span>(<span class="string">&quot;%s&quot;</span>, szExeName);</span><br><span class="line">	HANDLE hSnap = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (hSnap == INVALID_HANDLE_VALUE)</span><br><span class="line">	&#123;</span><br><span class="line">		ErrorCode = GetLastError();</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;调用失败,错误码：%d\n&quot;</span>, ErrorCode);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	BOOL bRet = ::Process32First(hSnap, &amp;pe);</span><br><span class="line">	<span class="keyword">while</span> (bRet)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">strcmp</span>(pe.szExeFile, szExeName) == <span class="number">0</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;进程名称：%s\n进程ID：%u\n&quot;</span>, pe.szExeFile, (<span class="type">unsigned</span> <span class="type">int</span>)pe.th32ProcessID);</span><br><span class="line">			<span class="keyword">return</span> pe.th32ProcessID;</span><br><span class="line">		&#125;</span><br><span class="line">		bRet = ::Process32Next(hSnap, &amp;pe);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	DWORD dwProcessId;</span><br><span class="line">	dwProcessId=GetProcessID();</span><br><span class="line">	<span class="type">char</span> *dllpath = (<span class="type">char</span>*)<span class="string">&quot;C:\\Users\\Lenovo\\source\\repos\\Dll\\x64\\Debug\\Dll.dll&quot;</span>;</span><br><span class="line">	<span class="keyword">if</span> (dwProcessId == <span class="number">-1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;未找到，请重试\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	AdjustPrivilege();</span><br><span class="line"><span class="comment">//打开目标进程取得句柄</span></span><br><span class="line">	HANDLE hTarget = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);</span><br><span class="line">	<span class="keyword">if</span> (hTarget == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;打开错误\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">//为目标进程分配大小用Dllpath大小的内存空间</span></span><br><span class="line">	LPVOID paraAddr=::VirtualAllocEx(hTarget, <span class="literal">NULL</span>, <span class="built_in">strlen</span>(dllpath) + <span class="number">1</span>, MEM_COMMIT,PAGE_READWRITE);</span><br><span class="line">	<span class="keyword">if</span> (paraAddr == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;空间分配错误\n&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">//将DllPath写入内存空间</span></span><br><span class="line">	<span class="keyword">if</span> (!::WriteProcessMemory(hTarget, paraAddr, dllpath, <span class="built_in">strlen</span>(dllpath) + <span class="number">1</span>, <span class="literal">NULL</span>))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;写入内存失败\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">//取得LoadLibrary函数地址</span></span><br><span class="line">	HINSTANCE LibHandle = ::LoadLibrary(<span class="string">&quot;Kernel32&quot;</span>);</span><br><span class="line">	UINT64  ProcAdd = (UINT64)GetProcAddress(LibHandle, <span class="string">&quot;LoadLibraryA&quot;</span>);</span><br><span class="line">	DWORD threadid = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//创建远程线程</span></span><br><span class="line">	HANDLE hThread = ::CreateRemoteThread(hTarget, <span class="literal">NULL</span>, <span class="number">0</span>, (LPTHREAD_START_ROUTINE)ProcAdd, paraAddr, <span class="number">0</span>, &amp;threadid);</span><br><span class="line">	::CloseHandle(hTarget);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>效果如下</li>
+</ul>
+<p><img src="https://s3.bmp.ovh/imgs/2022/06/23/9f02f1d55207c1d1.png" alt="                                                                             注入成功"></p>
+<pre><code>                                                                         注入成功
+</code></pre>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B3%A8%E5%85%A5/" rel="tag"># 注入</a>
+          </div>
+
+        
+
+
+        
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Oscraptcoco"
+      src="https://lh3.googleusercontent.com/Vbd2SNR9nNWhdYhdg2z2Mjwn-fgxVK6nzVWlnHor7dYYI56Ls6wtdWKMEHLUdMFAPIGu8w=s85">
+  <p class="site-author-name" itemprop="name">Oscraptcoco</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Oscraptcoco</span>
+</div>
+
+<!---->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
